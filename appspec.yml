@@ -1,0 +1,42 @@
+version: 0.0
+os: linux
+files:
+ - source: /myweb
+   destination: /tmp/myweb
+permissions:
+ - object: /tmp/myweb
+   mode: 755
+   type:
+    - directory
+ - object: /tmp/myweb
+   mode: 644
+   type:
+    - file
+ - object: /tmp
+   pattern: "myweb"
+   mode: 755
+   type:
+    - directory
+hooks:
+  ApplicationStop:
+    - location: scripts/deregister_from_elb.sh
+    - location: scripts/application_stop.sh
+      timeout: 60
+      runas: root
+  BeforeInstall:
+    - location: scripts/before_install.sh
+      timeout: 300
+      runas: root
+    - location: scripts/copy_files.sh
+      timeout: 300
+      runas: root
+  AfterInstall:
+    - location: scripts/after_install.sh
+      timeout: 100
+    - location: scripts/test.sh
+      timeout: 90
+  ApplicationStart:
+    - location: scripts/application_start.sh
+      timeout: 60
+      runas: root
+    - location: /scripts/register_with_elb.sh
